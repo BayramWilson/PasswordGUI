@@ -1,3 +1,4 @@
+import json
 from tkinter import *
 from tkinter import messagebox
 from random import randint, choice, shuffle
@@ -29,21 +30,42 @@ def generate_password():
 # IF ADD BTN USED
 def save():
     """takes the inputs from entries, write them to the data.txt file, clears the entries"""
-    data = open("data.txt", "a")
+
     # get value from entry points
     website = entry_website.get()
     name = entry_name.get()
     password = entry_password.get()
+    new_data = {website: {
+        "email": name,
+        "password": password,
+        }
+    }
     if website == "" or password == "":
         messagebox.showerror(title="Oops", message="You forgot some information")
     elif messagebox.askokcancel(title=website, message=f"These are the details entered: \nEmail: {name} "
                                                        f"\nPassword: {password} \n Is it ok to save?"):
-        data.write(f"{website} | {name} | {password} \n")
-        data.close()
-        entry_website.delete(0, END)
-        entry_password.delete(0, END)
-# ---------------------------- UI SETUP ------------------------------- #
+        try:
+            with open("data.json", "r") as data_file:
+                # json.dump(new_data, data_file, indent=4)
+                # Reading old data
+                data = json.load(data_file)
 
+        except FileNotFoundError:
+            with open("data.json", "w") as data_file:
+                json.dump(new_data, data_file, indent=4)
+
+        else:
+            # Update the data
+            data.update(new_data)
+
+            with open("data.json", "w") as data_file:
+                #Saving the data
+                json.dump(data, data_file, indent=4)
+        finally:
+            entry_website.delete(0, END)
+            entry_password.delete(0, END)
+
+# ---------------------------- UI SETUP ------------------------------- #
 
 # create window
 window = Tk()
@@ -72,7 +94,7 @@ entry_name = Entry(width=35)
 entry_password = Entry(width=21)
 # create inputs
 entry_website.grid(column=1, row=1, columnspan=2)
-entry_website.focus()
+# entry_website.focus()
 entry_name.grid(column=1, row=2, columnspan=2)
 entry_name.insert(0, "bayram.wilson04@gmail.com")
 entry_password.grid(column=1, row=3)
